@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+    
+    <head>
+        <meta charset="utf-8">
+        <title>AK IOI 游戏指北</title>
+        <link href="../style/main.css" rel="stylesheet" type="text/css" encoding="utf-8">
+        <link href="../style/ai.css" rel="stylesheet" type="text/css">
+        <link href="../vendor/cdn.jsdelivr.net/gh/xb2016/kratos-pjax@0.4.0/static/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="favicon.ico">
+        <script src="../vendor/cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js"></script>
+        <meta name="HandheldFriendly" content="True">
+        <meta name="MobileOptimized" content="320">
+        <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+        <style>
+        .game-container {
+            touch-action: none;
+        }
+        img{
+            max-width:100%;
+        }
+        </style>
+    </head>
+    
+    <body>
+        <div class="mobile-top"></div>
+        <div class="container" style="max-width: 800px; width: 100%;">
+            <h1>akioi (oi-2048) 游戏指北</h1>
+<h2>界面介绍</h2>
+<p><img src="all.png" alt="游戏界面截图" /></p>
+<ol>
+<li><strong>分数</strong><ol>
+<li><strong>分数</strong>，显示当前游戏的得分</li>
+<li><strong>纪录</strong>，显示你在本机上的，不作弊的最高分</li>
+</ol>
+</li>
+<li><strong>控制按钮</strong>，按照文本阅读顺序分别是<code>重新开始</code>，<code>获得提示</code>以及<code>作弊调节按钮</code>。</li>
+<li><strong>游戏区域</strong>，由4×4的网格构成，网格中可以有方块，是主体部分，其上有时会显示叠加层。</li>
+<li><strong>数值提示</strong>，给出了方块颜色、名称与数值之间的对应关系。<ol>
+<li>在移动界面上，数值提示是隐藏的。</li>
+<li>在iPad界面上，数值提示显示在游戏区域右侧，但只显示有标签的色块，不显示方块全名</li>
+<li>在PC界面上，数值提示完整显示</li>
+</ol>
+</li>
+<li><strong>排行榜</strong>，显示用户主动提交的成绩排名。</li>
+</ol>
+<h2>方块</h2>
+<p>游戏中一共有19种方块，每种方块都对应了实际数值。</p>
+<p><img src="blocks.png" alt="方块键值对应表" /></p>
+<p>如图，线上的方块只在数值相同时会合并（数值方块），线下的可以和线上的随意合并。</p>
+<h2>分数</h2>
+<p>分数用于评估一局游戏的总体情况，同时是排行榜排名的依据。</p>
+<p>方块合并时会获得分数。</p>
+<h2>合并</h2>
+<p>当两个方块“碰撞”到一起时，会发生合并。</p>
+<ul>
+<li>数值方块和数值方块合并，仅在数值相同时会发生，合并时数值相加，得分为合并的两数值之和。<ul>
+<li>如：<strong>[512]</strong> + <strong>[512]</strong> = <strong>[1024]</strong>，得分<strong>1024</strong></li>
+<li>两个数值为<strong>65536</strong>的方块不可以合并。</li>
+</ul>
+</li>
+<li>倍增方块和倍增方块合并，仅在类型相同时发生，合并时乘号后的数值相加，扣除分数为合并后的方块乘号后的数值。<ul>
+<li>如：<strong>[×2]</strong> + <strong>[×2]</strong> = <strong>[×4]</strong>，扣除分数<strong>4</strong></li>
+<li>两个 <strong>[×4]</strong> 方块不可再合并</li>
+</ul>
+</li>
+<li>倍增方块与数值方块合并，任何情况下皆可发生，合并后为一个数值方块，数值为原有数值方块的值乘上原有倍增方块乘号后的值，得分为合并后方块的数值。<ul>
+<li>如：<strong>[512]</strong> + <strong>[×2]</strong> = <strong>[1024]</strong>，得分<strong>1024</strong></li>
+</ul>
+</li>
+</ul>
+<h2>移动</h2>
+<p>移动是用户玩游戏的基本操作。</p>
+<p>在游戏界面静止，且游戏既没有通关也没有失败时，用户可以选择向上下左右四个方向移动方块。操作方式为按键盘方向键或用手指划屏。</p>
+<p>操作后，方块会向指定方向倾倒，并且可能发生合并。</p>
+<h2>合并法则</h2>
+<p>此处以向下移动为例。参考下面的局面。</p>
+<pre><code class="language-plain">2     4     8     1024
+      4     512   ×2
+2     4     ×1    64
+2     4     ×1    64</code></pre>
+<p>规则：</p>
+<ol>
+<li>每列单独处理</li>
+<li>对于每一列，从下向上扫描两个中间没有任何方块的方块。<ol>
+<li>如果两个方块完全相同且可合并，移除两个方块，将其合并成一个新的方块，并放在原来位置较低的方块处。接下来从这个新方块的上面开始扫描，而不再扫描新方块。</li>
+<li>如果一个数值和一个倍增方块可合并，那么要满足 ①两个方块原来相邻 ②位置较低的方块下面，直到游戏区域底部，都没有空白的格子 它们才能合并（合并的处理方式和两个完全相同的方块一样），否则不会合并。</li>
+</ol>
+</li>
+<li>最后，将所有方块按重力掉落到最下面。</li>
+</ol>
+<p>我们对上面局面的4列同时处理。</p>
+<pre><code class="language-plain">2     4     8     1024
+      4     512   ×2
+[2]   [4]   [×1]  [64]
+[2]   [4]   [×1]  [64]</code></pre>
+<p>▲ 第一次扫描</p>
+<pre><code class="language-plain">2     [4]   [8]   [1024]
+      [4]   [512] [×2]
+
+4     8     ×2    128</code></pre>
+<p>▲ 合并后，不再扫描新生成的方块。图中 <strong>[1024]</strong>和<strong>[×2]</strong> 不可合并，因为 <strong>[×2]</strong> 下面有空格。</p>
+<pre><code class="language-plain">2           8     1024
+      8     512   ×2  
+
+4     8     ×2    128</code></pre>
+<p>▲ 扫描结束后的样子</p>
+<pre><code class="language-plain">
+            8     1024
+2     8     512   ×2
+4     8     ×2    128</code></pre>
+<p>▲ 最终局面</p>
+<p>如果经过计算，发现移动操作完成后局面和移动前完全相同，系统将忽略这次移动操作。</p>
+<h2>游戏结束</h2>
+<p><strong>通关</strong>：制造出了一个 <strong>[65536]</strong> 方块，判定通关。游戏界面会显示<code>You AK IOI!</code></p>
+<p><strong>结束</strong>：当前局面下，无论如何进行移动操作，都会被系统忽略，系统会自动结束游戏，显示<code>AFO</code></p>
+<p>在游戏通关或结束后，可以选择将自己的成绩提交到排行榜。</p>
+<h2>生成新方块</h2>
+<p>生成新方块是系统自动的行为。系统会在空白格子中随机选择一个，并随机生成以下方块之一：</p>
+<ul>
+<li><strong>[2]</strong>，概率0.783</li>
+<li><strong>[4]</strong>，概率0.087</li>
+<li><strong>[×1]</strong>，概率0.1118</li>
+<li><strong>[×2]</strong>，概率0.0182</li>
+</ul>
+<p>在游戏开局时，系统会生成2个新方块，这两个新方块只会是数值方块，不会是倍增方块。</p>
+<p>如果移动操作没有被忽略，系统在操作后会生成1个新方块。</p>
+<h2>排行榜</h2>
+<p>用户可以在游戏结束后提交成绩到排行榜。用户需要设定一个长度在2和14之间的英文字母、数字和下划线名字，并且 30 天内不可修改。</p>
+<p>排行榜仅保留最近 45 天的记录。</p>
+<p>其中，斜体字“电脑”是作弊功能中“自动模式”所获得的成绩，可以参考或超越。</p>
+<p>排行榜的排序规则（从上到下实行）：</p>
+<ul>
+<li>如果分数不同，将分数高的排在前面</li>
+<li>如果最大值（游戏结束时数值最大的方块）不同，将最大值高的排在前面。</li>
+<li>将提交时间早的排在前面。</li>
+</ul>
+<h2>提示</h2>
+<p>始终将最大值保持在一个角上，并试图将次大的值围在其周围。</p>
+<p>尝试维护最大值所在行或列的单调性，并使其<del>方差</del>差异尽可能小。</p>
+<h2>鸣谢</h2>
+<p>项目原作者：<a href="http://gabrielecirulli.com">Gabriele Cirulli</a></p>
+<p>基于：<a href="https://itunes.apple.com/us/app/1024!/id823499224">1024 by Veewo Studio</a></p>
+<p>AI程序作者：<a href="https://github.com/ov3y/2048-AI">Matt Overlan</a></p>
+<p>魔改&amp;排行榜：<a href="https://ak-ioi.com/">yezhiyi9670</a></p>
+<hr />
+<p><a href="source.php">此页面的源文件</a></p>        </div>
+    </body>
+
+</html>
